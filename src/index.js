@@ -6,46 +6,31 @@ const { logger } = require('./utils/logger');
 const { sendToDestinations } = require('./services/messageService');
 const { scheduleDaily } = require('./utils/scheduler');
 
-// Initialize bot
-const bot = new TelegramBot(config.token, { 
-  polling: true,
-  onlyFirstMatch: true  // Prevents multiple command matches
-});
+// Initialize bot with simple polling
+const bot = new TelegramBot(config.token, { polling: true });
 
-// Remove any existing webhooks on startup
-bot.setWebHook('').catch(error => {
-  logger.error('Error removing webhook:', error);
-});
-
-// Command handlers
+// Start command handler
 bot.onText(/\/start/, async (msg) => {
-  const welcomeMessage = 
-    "Welcome to HN News Bot! 📰\n\n" +
-    "I'll send top Hacker News stories to configured destinations daily.\n\n" +
-    "Commands:\n" +
-    "/getnews - Get top stories now\n" +
-    "/help - Show this help message";
-  
+  const welcomeMessage = `Welcome to Hacker News Bot! 🚀\n\n` +
+    `Available commands:\n` +
+    `/getnews - Get the latest top news\n` +
+    `/help - Show this help message`;
+    
   await bot.sendMessage(msg.chat.id, welcomeMessage);
 });
 
+// Help command handler
 bot.onText(/\/help/, async (msg) => {
-  const helpMessage = 
-    "🤖 <b>HN News Bot Commands</b>\n\n" +
-    "/getnews - Fetch latest top Hacker News stories\n" +
-    "/help - Show this help message\n\n" +
-    "ℹ️ The bot automatically sends updates:\n" +
-    "• Daily at 8:00 AM EAT (Ethiopia/Addis Ababa time)\n" +
-    "• To configured Telegram channels and groups\n" +
-    "• Including topic threads in groups";
+  const helpMessage = `Hacker News Bot Commands:\n\n` +
+    `🔹 /getnews - Fetch top 10 stories from Hacker News\n` +
+    `🔹 /help - Show this help message\n\n` +
+    `The bot also automatically posts updates daily at 8:00 AM EAT.`;
     
-  await bot.sendMessage(msg.chat.id, helpMessage, { parse_mode: 'HTML' });
+  await bot.sendMessage(msg.chat.id, helpMessage);
 });
 
+// Command handlers
 bot.onText(/\/getnews/, async (msg) => {
-  // Ignore messages older than 1 minute
-  if (msg.date * 1000 < Date.now() - 60 * 1000) return;
-  
   try {
     const stories = await fetchTopStories();
     const messageObject = formatStoryMessage(stories);
@@ -69,10 +54,6 @@ const dailyUpdateTask = async () => {
     await sendToDestinations(bot, message, config.destinations);
   } catch (error) {
     logger.error('Error in scheduled task:', error);
-    // Optionally send an error message to a designated channel
-    if (config.errorChannelId) {
-      await bot.sendMessage(config.errorChannelId, '⚠️ Daily news update failed.');
-    }
   }
 };
 
