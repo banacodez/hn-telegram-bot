@@ -1,6 +1,7 @@
 {
   "name": "hn-telegram-bot",
   "version": "1.0.0",
+  "main": "src/index.js",
   "description": "A Telegram bot that sends daily top stories from Hacker News",
   "private": true,
   "scripts": {
