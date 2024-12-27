@@ -7,7 +7,23 @@ const { sendToDestinations } = require('./services/messageService');
 const { scheduleDaily } = require('./utils/scheduler');
 
 // Initialize bot with simple polling
-const bot = new TelegramBot(config.token, { polling: true });
+const bot = new TelegramBot(config.token, { 
+  polling: true,
+  onlyFirstMatch: true
+});
+
+// Add error handlers
+bot.on('polling_error', (error) => {
+  if (error.code === 'ETELEGRAM' && error.message.includes('401')) {
+    logger.error('Bot token is invalid. Please check your TELEGRAM_BOT_TOKEN environment variable.');
+    process.exit(1); // Exit the process to trigger a restart
+  }
+  logger.error('Polling error:', error);
+});
+
+bot.on('error', (error) => {
+  logger.error('Bot error:', error);
+});
 
 // Start command handler
 bot.onText(/\/start/, async (msg) => {
