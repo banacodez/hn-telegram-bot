@@ -7,7 +7,15 @@ const { sendToDestinations } = require('./services/messageService');
 const { scheduleDaily } = require('./utils/scheduler');
 
 // Initialize bot
-const bot = new TelegramBot(config.botToken, { polling: true });
+const bot = new TelegramBot(config.token, { 
+  polling: true,
+  onlyFirstMatch: true  // Prevents multiple command matches
+});
+
+// Remove any existing webhooks on startup
+bot.setWebHook('').catch(error => {
+  logger.error('Error removing webhook:', error);
+});
 
 // Command handlers
 bot.onText(/\/start/, async (msg) => {
@@ -35,19 +43,18 @@ bot.onText(/\/help/, async (msg) => {
 });
 
 bot.onText(/\/getnews/, async (msg) => {
+  // Ignore messages older than 1 minute
+  if (msg.date * 1000 < Date.now() - 60 * 1000) return;
+  
   try {
     const stories = await fetchTopStories();
     const messageObject = formatStoryMessage(stories);
     
-    // Only send to the requesting user
     await bot.sendMessage(msg.chat.id, messageObject.text, { 
       parse_mode: 'HTML',
       disable_web_page_preview: true,
       reply_markup: messageObject.reply_markup
     });
-    
-    // Remove this line to prevent sending to all destinations
-    // await sendToDestinations(bot, messageObject, config.destinations);
   } catch (error) {
     logger.error('Error handling /getnews command:', error);
     await bot.sendMessage(msg.chat.id, '⚠️ Failed to fetch stories. Please try again later.');
