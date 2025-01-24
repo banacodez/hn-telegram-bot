@@ -5,8 +5,8 @@ const EAST_AFRICAN_TIMEZONE = 'Africa/Addis_Ababa';
 
 const scheduleDaily = (taskFn) => {
   const rule = new schedule.RecurrenceRule();
-  rule.hour = 8;
-  rule.minute = 0;
+  rule.hour = 23;
+  rule.minute = 25;
   rule.tz = EAST_AFRICAN_TIMEZONE;
 
   return schedule.scheduleJob(rule, async () => {
