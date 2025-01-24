@@ -1,14 +1,14 @@
 const schedule = require('node-schedule');
 const { logger } = require('./logger');
 
-const SCHEDULED_HOUR = process.env.SCHEDULED_HOUR ? parseInt(process.env.SCHEDULED_HOUR) : 8;
-const SCHEDULED_MINUTE = process.env.SCHEDULED_MINUTE ? parseInt(process.env.SCHEDULED_MINUTE) : 0;
+const EAST_AFRICAN_TIMEZONE = 'Africa/Addis_Ababa';
 
 const scheduleDaily = (taskFn) => {
   const rule = new schedule.RecurrenceRule();
-  rule.hour = SCHEDULED_HOUR;
-  rule.minute = SCHEDULED_MINUTE;
-  
+  rule.hour = 8;
+  rule.minute = 0;
+  rule.tz = EAST_AFRICAN_TIMEZONE;
+
   return schedule.scheduleJob(rule, async () => {
     try {
       await taskFn();
@@ -18,5 +18,4 @@ const scheduleDaily = (taskFn) => {
     }
   });
 };
-
 module.exports = { scheduleDaily };
