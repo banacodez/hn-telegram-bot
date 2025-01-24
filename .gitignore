@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+package-lock.json
 
 # Logs
 *.log
@@ -8,6 +9,8 @@ error.log
 
 # Environment
 .env
+.env.local
+.env.*.local
 
 # IDE
 .vscode/
@@ -16,3 +19,7 @@ error.log
 # OS
 .DS_Store
 Thumbs.db
+
+# Production
+dist/
+build/
