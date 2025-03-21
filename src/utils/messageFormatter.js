@@ -20,10 +20,11 @@ function formatStoryMessage(stories) {
     const title = story.title;
     const url = story.url || `https://news.ycombinator.com/item?id=${story.id}`;
     const points = story.score || 0;
-    const comments = story.descendants || 0;
+    const commentsCount = story.descendants || 0;
+    const commentsUrl = "https://news.ycombinator.com/newcomments";
 
     return `${index + 1}. <a href="${url}">${title}</a>\n` +
-           `📊 ${points} points | 💬 ${comments} comments\n`;
+           `📊 ${points} points | 💬 <a href="${commentsUrl}">comments</a> (${commentsCount})\n`;
   }).join('\n');
 
   const reply_markup = {
