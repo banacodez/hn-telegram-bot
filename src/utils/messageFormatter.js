@@ -21,7 +21,7 @@ function formatStoryMessage(stories) {
     const url = story.url || `https://news.ycombinator.com/item?id=${story.id}`;
     const points = story.score || 0;
     const commentsCount = story.descendants || 0;
-    const commentsUrl = "https://news.ycombinator.com/newcomments";
+    const commentsUrl = `https://news.ycombinator.com/item?id=${story.id}`; // Specific discussion link
 
     return `${index + 1}. <a href="${url}">${title}</a>\n` +
            `📊 ${points} points | 💬 <a href="${commentsUrl}">comments</a> (${commentsCount})\n`;
