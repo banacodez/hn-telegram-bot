@@ -4,54 +4,67 @@ const { fetchTopStories } = require('../src/services/hnService');
 const { formatStoryMessage } = require('../src/utils/messageFormatter');
 const { logger } = require('../src/utils/logger');
 
-// This is the main Vercel serverless function
+// --- Helper Functions for Commands ---
+
+const handleStart = (bot, chatId) => {
+  const welcomeMessage = `Welcome to Hacker News Bot! 🚀\n\n` +
+    `Available commands:\n` +
+    `/getnews - Get the latest top news\n` +
+    `/help - Show this help message`;
+  bot.sendMessage(chatId, welcomeMessage);
+};
+
+const handleHelp = (bot, chatId) => {
+  const helpMessage = `Hacker News Bot Commands:\n\n` +
+    `🔹 /getnews - Fetch top 10 stories from Hacker News\n` +
+    `🔹 /help - Show this help message\n\n` +
+    `The bot also automatically posts updates daily at 8:00 AM EAT.`;
+  bot.sendMessage(chatId, helpMessage);
+};
+
+const handleGetNews = async (bot, chatId) => {
+  try {
+    const stories = await fetchTopStories();
+    const messageObject = formatStoryMessage(stories);
+    await bot.sendMessage(chatId, messageObject.text, {
+      parse_mode: 'HTML',
+      disable_web_page_preview: true,
+      reply_markup: messageObject.reply_markup
+    });
+  } catch (error) {
+    logger.error('Error in handleGetNews:', error);
+    await bot.sendMessage(chatId, '⚠️ Failed to fetch stories. Please try again later.');
+  }
+};
+
+// --- Main Vercel Serverless Function ---
+
 module.exports = async (request, response) => {
   try {
-    // Create a new bot instance for every request
     const bot = new TelegramBot(config.token);
+    const { message } = request.body;
 
-    // Define command handlers inside the main function
-    bot.onText(/\/start/, (msg) => {
-      logger.info('Received /start command');
-      const welcomeMessage = `Welcome to Hacker News Bot! 🚀\n\n` +
-        `Available commands:\n` +
-        `/getnews - Get the latest top news\n` +
-        `/help - Show this help message`;
-      bot.sendMessage(msg.chat.id, welcomeMessage);
-    });
+    // Check if message and text exist
+    if (message && message.text) {
+      const chatId = message.chat.id;
+      const command = message.text;
+      
+      logger.info(`Received command: "${command}" from chat ID: ${chatId}`);
 
-    bot.onText(/\/help/, (msg) => {
-      logger.info('Received /help command');
-      const helpMessage = `Hacker News Bot Commands:\n\n` +
-        `🔹 /getnews - Fetch top 10 stories from Hacker News\n` +
-        `🔹 /help - Show this help message\n\n` +
-        `The bot also automatically posts updates daily at 8:00 AM EAT.`;
-      bot.sendMessage(msg.chat.id, helpMessage);
-    });
-
-    bot.onText(/\/getnews/, async (msg) => {
-      logger.info('Received /getnews command');
-      try {
-        const stories = await fetchTopStories();
-        const messageObject = formatStoryMessage(stories);
-        await bot.sendMessage(msg.chat.id, messageObject.text, {
-          parse_mode: 'HTML',
-          disable_web_page_preview: true,
-          reply_markup: messageObject.reply_markup
-        });
-      } catch (error) {
-        logger.error('Error handling /getnews command:', error);
-        await bot.sendMessage(msg.chat.id, '⚠️ Failed to fetch stories. Please try again later.');
+      // Handle commands directly
+      if (command === '/start') {
+        handleStart(bot, chatId);
+      } else if (command === '/help') {
+        handleHelp(bot, chatId);
+      } else if (command === '/getnews') {
+        // We MUST await this because it's an async operation
+        await handleGetNews(bot, chatId);
       }
-    });
-
-    // We process the update from Telegram here
-    await bot.processUpdate(request.body);
-
+    }
   } catch (error) {
-    logger.error('Error processing update:', error);
+    logger.error('Error in main function:', error);
   }
-  
-  // Send a 200 OK response to Telegram
+
+  // Respond to Telegram to acknowledge receipt of the message
   response.status(200).send('OK');
 };
