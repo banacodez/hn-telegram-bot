@@ -7,8 +7,7 @@ const logger = winston.createLogger({
     winston.format.json()
   ),
   transports: [
-    new winston.transports.File({ filename: 'error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'combined.log' }),
+    // We only need the console transport for Vercel.
     new winston.transports.Console({
       format: winston.format.simple()
     })
