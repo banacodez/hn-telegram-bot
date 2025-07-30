@@ -1,21 +1,15 @@
 {
   "name": "hn-telegram-bot",
   "version": "1.0.0",
-  "main": "src/index.js",
+  "main": "api/index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
-    "start:prod": "cross-env NODE_ENV=production node src/index.js"
+    "start": "node api/index.js"
   },
   "dependencies": {
-    "node-telegram-bot-api": "^0.64.0",
-    "dotenv": "^16.3.1",
-    "node-schedule": "^2.1.1",
     "axios": "^1.6.2",
+    "dotenv": "^16.3.1",
+    "express": "^4.19.2",
+    "node-telegram-bot-api": "^0.64.0",
     "winston": "^3.11.0"
-  },
-  "devDependencies": {
-    "cross-env": "^7.0.3",
-    "nodemon": "^2.0.15"
   }
 }
